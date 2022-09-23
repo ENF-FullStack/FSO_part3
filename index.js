@@ -1,18 +1,15 @@
-require('dotenv').config()
 const express = require('express')
+const app = express()
+
 const morgan = require('morgan')
 const cors = require('cors')
-const mongoose = require('mongoose')
-const app = express()
+require('dotenv').config()
 const Person = require('./models/person')
 
-//app.use(morgan('tiny'))
 app.use(morgan(':method :url :status :res[content-length] :response-time ms :body'))
 app.use(express.json())
-app.use(express.static('build'))
 app.use(cors())
-
-// NOTE: muista poistaa passu ennen git commitia
+app.use(express.static('build'))
 
 app.get('/', (req, res) => {
     res.send('<h1>Hello World!</h1>')
@@ -23,14 +20,6 @@ app.get('/api/persons', (req, res) => {
         // console.log(persons)
         res.json(persons)
     })
-    mongoose.connection.close()
-})
-
-app.get('/info', (req, res) => {
-    res.send(
-        `<p>Phonebook has info for ${persons.length} people</p>
-        <p>${new Date().toString()}</p>`
-    )
 })
 
 app.get('/api/persons/:id', (req, res) => {
@@ -51,14 +40,8 @@ app.delete('/api/persons/:id', (req, res) => {
     res.status(204).end()
 })
 
-const generateId = () => {
-    const id = Math.floor(Math.random() * 10000)
-    return id
-}
-
 app.post('/api/persons', (req, res) => {
     const body = req.body
-    body.id = generateId()
 
     if (!body.name || !body.number) {
         return res.status(400).json({
@@ -66,20 +49,14 @@ app.post('/api/persons', (req, res) => {
         })
     }
 
-    if (persons.find((person) => person.name === body.name)) {
-        return res.status(400).json({
-            error: 'name must be unique'
-        })
-    }
-
-    const person = {
-        id: generateId(),
+    const person = new Person({
         name: body.name,
         number: body.number
-    }
+    })
 
-    persons = persons.concat(person)
-    res.json(person)
+    person.save().then(savedPerson => {
+        res.json(savedPerson)
+    })
 })
 
 morgan.token('body', (req, res) => JSON.stringify(req.body))
