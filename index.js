@@ -21,6 +21,14 @@ app.get('/api/persons', (req, res) => {
     })
 })
 
+app.get("/info", (req, res) => {
+    Person.countDocuments({}).then(persons => {
+        res.send(
+          `<p>Phonebook has info for ${persons} people </p>
+          <p> ${new Date().toString()} </p>`)
+    })
+  })
+
 app.get('/api/persons/:id', (req, res, next) => {
     Person.findById(req.params.id)
         .then(person => {
