@@ -63,10 +63,14 @@ app.post('/api/persons', (req, res, next) => {
         number: body.number
     })
 
-    person.save().then(savedPerson => {
-        res.json(savedPerson)
-    })
-    .catch(error => next(error))
+    console.log(person)
+
+    person.save(
+        { new: true, runValidators: true })
+        .then(savedPerson => {
+            res.json(savedPerson)
+        })
+        .catch(error => next(error))
 })
 
 app.put('/api/persons/:id', (req, res, next) => {
